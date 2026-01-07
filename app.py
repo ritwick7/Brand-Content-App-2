@@ -4,6 +4,7 @@ from config.categories import CATEGORIES
 from categories import product, event, brand
 from prompts import product_prompt, event_prompt, brand_prompt
 from clarifier import get_clarification_questions
+from services.text_generator import generate_text
 
 
 # ---------------------------------
@@ -31,6 +32,9 @@ if "ready_for_prompt" not in st.session_state:
 
 if "prompt_generated" not in st.session_state:
     st.session_state.prompt_generated = False
+
+if "final_prompt" not in st.session_state:
+    st.session_state.final_prompt = None
 
 
 # ---------------------------------
@@ -77,12 +81,10 @@ if st.button("Generate (Preview)"):
         st.session_state.questions = []
         st.session_state.ready_for_prompt = False
         st.session_state.prompt_generated = False
+        st.session_state.final_prompt = None
 
     else:
-        # Store validated base data
         st.session_state.clarified_data = data.copy()
-
-        # Get clarification questions
         st.session_state.questions = get_clarification_questions(
             category_key,
             data
@@ -90,6 +92,7 @@ if st.button("Generate (Preview)"):
 
         st.session_state.ready_for_prompt = False
         st.session_state.prompt_generated = False
+        st.session_state.final_prompt = None
 
 
 # ---------------------------------
@@ -117,18 +120,38 @@ if st.session_state.questions:
 
 
 # ---------------------------------
-# Step 3: Build prompt (explicit only)
+# Step 3: Build prompt (explicit)
 # ---------------------------------
 if (
     st.session_state.ready_for_prompt
     and st.session_state.prompt_generated
 ):
     if category_key == "product":
-        prompt = product_prompt.build(st.session_state.clarified_data)
+        st.session_state.final_prompt = product_prompt.build(
+            st.session_state.clarified_data
+        )
     elif category_key == "event":
-        prompt = event_prompt.build(st.session_state.clarified_data)
+        st.session_state.final_prompt = event_prompt.build(
+            st.session_state.clarified_data
+        )
     elif category_key == "brand":
-        prompt = brand_prompt.build(st.session_state.clarified_data)
+        st.session_state.final_prompt = brand_prompt.build(
+            st.session_state.clarified_data
+        )
 
     st.subheader("Generated Prompt")
-    st.code(prompt)
+    st.code(st.session_state.final_prompt)
+
+
+# ---------------------------------
+# Step 4: Gemini text generation
+# ---------------------------------
+if st.session_state.final_prompt:
+    st.divider()
+
+    if st.button("Generate Text Output"):
+        with st.spinner("Generating content..."):
+            output = generate_text(st.session_state.final_prompt)
+
+        st.subheader("Generated Content")
+        st.write(output)
