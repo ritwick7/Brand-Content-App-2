@@ -1,4 +1,4 @@
-import streamlit as st
+import streamlit as st # type: ignore
 
 from config.categories import CATEGORIES
 from categories import product, event, brand
@@ -146,12 +146,12 @@ if (
 # ---------------------------------
 # Step 4: Gemini text generation
 # ---------------------------------
-if st.session_state.final_prompt:
-    st.divider()
+# if st.session_state.final_prompt:
+#     st.divider()
 
-    if st.button("Generate Text Output"):
-        with st.spinner("Generating content..."):
-            output = generate_text(st.session_state.final_prompt)
+#     if st.button("Generate Text Output"):
+#         with st.spinner("Generating content..."):
+#             output = generate_text(st.session_state.final_prompt)
 
-        st.subheader("Generated Content")
-        st.write(output)
+#         st.subheader("Generated Content")
+#         st.write(output)
